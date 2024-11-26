@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as TOML from '@iarna/toml';
+import {initializeTelemetryReporter, TelemetryLog} from "./telemetry";
 
 // Helper function to format TOML string
 function formatTOML(tomlString: string): string {
@@ -42,9 +43,13 @@ function formatTOML(tomlString: string): string {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+    initializeTelemetryReporter(context);
+    TelemetryLog('info', 'Extension activated');
+
     // Register the formatting provider
     let disposable = vscode.languages.registerDocumentFormattingEditProvider('toml', {
         provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
+            TelemetryLog('info', 'Formatting TOML document');
             const text = document.getText();
             try {
                 // Parse TOML to check validity
@@ -66,6 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
 
                 return [vscode.TextEdit.replace(range, formatted)];
             } catch (error) {
+                TelemetryLog('error', `Error formatting TOML: ${error}`);
                 vscode.window.showErrorMessage('Error formatting TOML: Invalid syntax');
                 return [];
             }
@@ -132,6 +138,7 @@ export function activate(context: vscode.ExtensionContext) {
             diagnosticCollection.set(document.uri, []);
         } catch (error: any) {
             // Add diagnostic for parsing error
+            TelemetryLog('error', `Error parsing TOML: ${error}`);
             const message = error.message || 'Invalid TOML syntax';
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(0, 0, 0, 0),
@@ -162,4 +169,6 @@ export function activate(context: vscode.ExtensionContext) {
     );
 }
 
-export function deactivate() {}
+export function deactivate() {
+    TelemetryLog('info', 'Extension deactivated');
+}
