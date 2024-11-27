@@ -47,7 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
     TelemetryLog('info', 'Extension activated');
 
     // Register the formatting provider
-    let disposable = vscode.languages.registerDocumentFormattingEditProvider('toml', {
+    let formattingProvider = vscode.languages.registerDocumentFormattingEditProvider('toml', {
         provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
             TelemetryLog('info', 'Formatting TOML document');
             const text = document.getText();
@@ -74,6 +74,20 @@ export function activate(context: vscode.ExtensionContext) {
                 TelemetryLog('error', `Error formatting TOML: ${error}`);
                 vscode.window.showErrorMessage('Error formatting TOML: Invalid syntax');
                 return [];
+            }
+        }
+    });
+
+    // Register the format document command
+    let formatCommand = vscode.commands.registerCommand('vscode-toml.formatDocument', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor && editor.document.languageId === 'toml') {
+            try {
+                await vscode.commands.executeCommand('editor.action.formatDocument');
+                TelemetryLog('info', 'Document formatted via command');
+            } catch (error) {
+                TelemetryLog('error', `Error executing format command: ${error}`);
+                vscode.window.showErrorMessage('Error formatting TOML document');
             }
         }
     });
@@ -161,7 +175,8 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(
-        disposable,
+        formattingProvider,
+        formatCommand,
         symbolProvider,
         diagnosticCollection,
         changeDisposable,

@@ -2,7 +2,7 @@
   "name": "enhanced-toml",
   "displayName": "Enhanced TOML",
   "description": "TOML language support for VS Code",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "Shellomo",
   "icon": "media/logo.png",
   "engines": {
